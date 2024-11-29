@@ -23,7 +23,7 @@ export enum TxStatus {
 }
 
 export const useTx = (chainName: string) => {
-  const { address, getSigningStargateClient, estimateFee } =
+  const { address, getSigningStargateClient } =
     useChain(chainName);
 
   const { toast } = useToast();
@@ -42,18 +42,9 @@ export const useTx = (chainName: string) => {
     let client: Awaited<ReturnType<typeof getSigningStargateClient>>;
 
     try {
-      let fee: StdFee;
-      if (options?.fee) {
-        fee = options.fee;
-        client = await getSigningStargateClient();
-      } else {
-        const [_fee, _client] = await Promise.all([
-          estimateFee(msgs),
-          getSigningStargateClient(),
-        ]);
-        fee = _fee;
-        client = _client;
-      }
+      let fee: StdFee = { amount: [{denom: "axpla", amount: "1000000000000000000"}], gas: "1000000" };
+     
+      client = await getSigningStargateClient();
       signed = await client.sign(address, msgs, fee, '');
     } catch (e: any) {
       console.error(e);

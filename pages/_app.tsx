@@ -8,7 +8,9 @@ import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { SignerOptions, wallets } from 'cosmos-kit';
 import { ChainProvider } from '@cosmos-kit/react';
 import { chains, assets } from 'chain-registry';
-import { GasPrice } from '@cosmjs/stargate';
+import { defaultRegistryTypes, GasPrice } from '@cosmjs/stargate';
+import { EthAccount } from '@xpla/xpla.proto/ethermint/types/v1/account'
+import { Any } from "cosmjs-types/google/protobuf/any";
 
 import {
   Box,
@@ -18,6 +20,9 @@ import {
   ThemeProvider,
   OverlaysManager,
 } from '@interchain-ui/react';
+import { Chain } from '@chain-registry/types';
+import { Registry } from "@cosmjs/proto-signing";
+import { PubKey } from '@xpla/xpla.proto/ethermint/crypto/v1/ethsecp256k1/keys';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,7 +39,7 @@ function CreateCosmosApp({ Component, pageProps }: AppProps) {
   const signerOptions: SignerOptions = {
     // TODO fix type error
     // @ts-ignore
-    signingStargate: (chain) => {
+    signingStargate: (chain: Chain) => {
       let gasPrice;
       try {
         // TODO fix type error
@@ -45,7 +50,23 @@ function CreateCosmosApp({ Component, pageProps }: AppProps) {
       } catch (error) {
         gasPrice = GasPrice.fromString('0.025uosmo');
       }
-      return { gasPrice };
+
+      let registry: Registry = new Registry(defaultRegistryTypes)
+      registry.register("/ethermint.types.v1.EthAccount", EthAccount)
+      registry.register("/ethermint.crypto.v1.ethsecp256k1.PubKey", PubKey)
+
+      return { registry, gasPrice, accountParser: (src: Any) => {
+        console.log(`accountParser`)
+        const ethAccount = EthAccount.decode(src.value)
+        
+        
+        return {
+          address: ethAccount.baseAccount?.address,
+          pubkey: ethAccount.baseAccount?.pubKey,
+          accountNumber: ethAccount.baseAccount?.accountNumber,
+          sequence: ethAccount.baseAccount?.sequence,
+        }
+      } };
     },
   };
 

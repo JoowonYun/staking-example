@@ -16,6 +16,8 @@
     "@interchain-ui/react": "1.23.29",
     "@interchain-ui/react-no-ssr": "^0.1.6",
     "@tanstack/react-query": "4.32.0",
+    "@xpla/xpla.js": "^1.6.1",
+    "@xpla/xpla.proto": "^1.6.0",
     "bignumber.js": "9.1.1",
     "chain-registry": "^1.69.32",
     "cosmos-kit": "2.18.0",
